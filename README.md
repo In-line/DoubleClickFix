@@ -6,9 +6,13 @@ It's working on Microsoft Windows operating systems, since Windows 2000 Professi
 Programm point:
 If delay between single clicks is lower than "Block Delay", the click will be blocked.
 
+Compiling with QT5 and MVSC2013 compiler.
+
 [RU]
 DoubleClickFix — это программа с открытым исходным кодом для исправления проблемы двойного клика на мышке. 
 Работает на операционных системах Microsoft Windows начиная с Windows 2000 Professional.
 
 Суть программы:
 Если промежуток между кликами меньше "Block Delay", то нажатие блокируется.
+
+Компилируется с QT5 и компилятором MVSC2013
