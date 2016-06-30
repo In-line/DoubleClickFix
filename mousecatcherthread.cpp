@@ -17,6 +17,7 @@
 
 #include "mousecatcherthread.h"
 #include <QMessageBox>
+#include <QTimer>
 #if defined QT_DEBUG
 #include <QDebug>
 #endif
