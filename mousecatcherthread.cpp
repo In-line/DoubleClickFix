@@ -1,4 +1,4 @@
-/*   Copyright (C) 2016 Alik Aslanyan <cplusplus256@gmail.com>
+﻿/*   Copyright (C) 2016 Alik Aslanyan <cplusplus256@gmail.com>
 *    This file is part of DoubleClickFix.
 *
 *    DoubleClickFix is free software: you can redistribute it and/or modify
@@ -26,7 +26,7 @@ MouseCatcherThread *MouseCatcherThread::m_This;
 
 MouseCatcherThread::MouseCatcherThread() : QThread(), m_isStarted(false),
 	m_Delay(0),m_isLoggingStarted(false),m_Hook(NULL),
-	m_isMouseHoldAutoSelectionMode(false), m_MouseHoldingDelay(0)
+	m_isMouseHoldAutoSelectionMode(false), m_MouseHoldingDelay(0), m_isSelectionMode(false)
 {
 	MouseCatcherThread::m_This = this;
 	m_ClickTimer.start();

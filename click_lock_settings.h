@@ -1,4 +1,4 @@
-/*   Copyright (C) 2016 Alik Aslanyan <cplusplus256@gmail.com>
+﻿/*   Copyright (C) 2016 Alik Aslanyan <cplusplus256@gmail.com>
 *    This file is part of DoubleClickFix.
 *
 *    DoubleClickFix is free software: you can redistribute it and/or modify
@@ -32,8 +32,8 @@ struct click_lock_settings_data;
 #include <QLineEdit>
 struct click_lock_settings_data
 {
-	hotKey hkKey;
 	double dMouseHoldingDelay;
+	hotKey hkKey;
 	bool bHotKeyEnabled;
 	bool bMouseHoldingEnabled;
 
