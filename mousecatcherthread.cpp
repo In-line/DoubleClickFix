@@ -12,150 +12,225 @@
 *    GNU General Public License for more details.
 *
 *    You should have received a copy of the GNU General Public License
-*    along with Foobar.  If not, see <http://www.gnu.org/licenses/>.
+*    along with DoubleClickFix.  If not, see <http://www.gnu.org/licenses/>.
 */
 
 #include "mousecatcherthread.h"
 #include <QMessageBox>
+#if defined QT_DEBUG
 #include <QDebug>
-
+#endif
 MouseCatcherThread *MouseCatcherThread::m_This;
 #define BLOCK_CALL 1
 
-MouseCatcherThread::MouseCatcherThread() : QThread(), m_isStarted(false), m_Delay(0),m_isLoggingStarted(false),m_Hook(NULL)
+MouseCatcherThread::MouseCatcherThread() : QThread(), m_isStarted(false),
+	m_Delay(0),m_isLoggingStarted(false),m_Hook(NULL),
+	m_isMouseHoldAutoSelectionMode(false), m_MouseHoldingDelay(0)
 {
-    MouseCatcherThread::m_This = this;
-    m_ClickTimer.start();
-    setObjectName("MouseCatcherThread");
-    iBlockMouseButtonUps[0] = iBlockMouseButtonUps[1] = 0;
-    iBlockMouseButtonDowns[0] = iBlockMouseButtonDowns[1] = 0;
+	MouseCatcherThread::m_This = this;
+	m_ClickTimer.start();
+	setObjectName("MouseCatcherThread");
+	iBlockMouseButtonUps[0] = iBlockMouseButtonUps[1] = 0;
+	iBlockMouseButtonDowns[0] = iBlockMouseButtonDowns[1] = 0;
 }
 
 MouseCatcherThread *MouseCatcherThread::getInstance()
 {
-    if(!m_This) m_This = new MouseCatcherThread();
+	if(!m_This) m_This = new MouseCatcherThread();
 
-    return m_This;
+	return m_This;
 }
 
 MouseCatcherThread::~MouseCatcherThread()
 {
-    UnhookWindowsHookEx(m_Hook);
-    m_This = NULL;
-    m_Hook = NULL;
+	UnhookWindowsHookEx(m_Hook);
+	m_This = NULL;
+	m_Hook = NULL;
 }
 #if defined QT_DEBUG
 #include <QTimer>
 #endif
 LRESULT inline MouseCatcherThread::MouseCallBackProc(int nCode, WPARAM wParam, LPARAM lParam)
 {
-    if(nCode != HC_ACTION) return CallNextHookEx(m_Hook, nCode, wParam, lParam);
+	if(nCode != HC_ACTION) return CallNextHookEx(m_Hook, nCode, wParam, lParam);
 
-    switch(wParam)
-    {
-    case WM_MOUSEMOVE:
-    {
-#if defined QT_DEBUG
-        static int iCount = 0;
-        if(iCount == 0)
-        {
-            QTimer::singleShot(1000,Qt::VeryCoarseTimer,this,[=](){
-                qDebug()<<"WM_MOUSEMOVE per sec: " << iCount;
-                iCount=0;
-            });
-        }
-        iCount++;
-#endif
-        return CallNextHookEx(m_Hook, nCode, wParam, lParam);
-        break;
-    }
-    case WM_LBUTTONDOWN: case WM_RBUTTONDOWN:
-    {
-        if(isStarted())
-        {
-            bool isRight = wParam==WM_RBUTTONDOWN;
-            int iMSecs = m_ClickTimer.elapsed();
-            m_ClickTimer.restart();
-            bool needLog = isLoggingStarted();
+	switch(wParam)
+	{
+		case WM_MOUSEMOVE:
+		{
+			return CallNextHookEx(m_Hook, nCode, wParam, lParam);
+			break;
+		}
+		case WM_LBUTTONDOWN: case WM_RBUTTONDOWN:
+		{
+			if(isStarted())
+			{
+				bool isRight = wParam==WM_RBUTTONDOWN;
+				int iMSecs = m_ClickTimer.elapsed();
+				m_ClickTimer.restart();
 
-            if(getDelay()>=iMSecs)
-            {
-                iBlockMouseButtonUps[(int)isRight]++;
-                if(needLog) emit delay(iMSecs, true, isRight);
-                return BLOCK_CALL;
-            }
-            else if(needLog)
-            {
-                emit delay(iMSecs, false, isRight);
-            }
-        }
-        break;
-    }
-    case WM_LBUTTONUP: case WM_RBUTTONUP:
-    {
-        if(isStarted())
-        {
-            int index = (int)wParam==WM_RBUTTONUP;
-            if(iBlockMouseButtonUps[index]>0)
-            {
-                iBlockMouseButtonUps[index]--;
-                return BLOCK_CALL;
-            }
 
-        }
-        break;
-    }
-    }
+				bool needLog = isLoggingStarted();
 
-    return CallNextHookEx(m_Hook, nCode, wParam, lParam);
+				if(getDelay()>=iMSecs)
+				{
+					iBlockMouseButtonUps[(int)isRight]++;
+					if(needLog) emit delay(iMSecs, true, isRight);
+					return BLOCK_CALL;
+				}
+				else if(needLog)
+				{
+					emit delay(iMSecs, false, isRight);
+				}
+
+				if(m_iToggled && wParam==WM_LBUTTONDOWN)
+				{
+					m_iToggled=!m_iToggled;
+
+					POINT p;
+					GetCursorPos(&p);
+					INPUT ip;
+					memset(&ip, 0, sizeof(INPUT));
+					ip.type = INPUT_MOUSE;
+					ip.mi.dx = p.x;
+					ip.mi.dy = p.y;
+					ip.mi.dwFlags = MOUSEEVENTF_LEFTUP | MOUSEEVENTF_ABSOLUTE;
+					SendInput(1, &ip, sizeof(INPUT));
+					setSelectionMode(false);
+					return BLOCK_CALL;
+				}
+				else if(isSelectionMode())
+				{
+					m_iToggled=!m_iToggled;
+				}
+				else if(isMouseHoldAutoSelectionMode())
+				{
+					QTimer *t = new QTimer();
+					t->setSingleShot(true);
+					t->setInterval(getMouseHoldingDelay());
+					t->moveToThread(this);
+					connect(this, SIGNAL(mouse_up()), t, SLOT(stop()));
+					connect(this, SIGNAL(mouse_up()), t, SLOT(deleteLater()));
+
+					connect(this, SIGNAL(finished()), t, SLOT(stop()));
+					connect(this, SIGNAL(finished()), t, SLOT(deleteLater()));
+
+
+					connect(t, &QTimer::timeout, [this](){
+
+						setSelectionMode(true);
+						m_iToggled=true;
+					});
+
+
+					t->start();
+				}
+			}
+			break;
+		}
+		case WM_LBUTTONUP: case WM_RBUTTONUP:
+		{
+			if(isStarted())
+			{
+				if(m_iToggled && wParam==WM_LBUTTONUP)
+				{
+					return BLOCK_CALL;
+				}
+				else
+				{
+					int index = (int)wParam==WM_RBUTTONUP;
+					if(iBlockMouseButtonUps[index]>0)
+					{
+						iBlockMouseButtonUps[index]--;
+						return BLOCK_CALL;
+					}
+					else if(isMouseHoldAutoSelectionMode())
+					{
+						emit mouse_up();
+					}
+				}
+				break;
+			}
+		}
+	}
+	return CallNextHookEx(m_Hook, nCode, wParam, lParam);
+}
+
+double MouseCatcherThread::getMouseHoldingDelay() const
+{
+	return m_MouseHoldingDelay;
+}
+
+void MouseCatcherThread::setMouseHoldingDelay(double MouseHoldingDelay)
+{
+	m_MouseHoldingDelay = MouseHoldingDelay;
+}
+
+bool MouseCatcherThread::isMouseHoldAutoSelectionMode() const
+{
+	return m_isMouseHoldAutoSelectionMode;
+}
+
+void MouseCatcherThread::setMouseHoldAutoSelectionMode(bool MouseHoldAutoSelectionMode)
+{
+	m_isMouseHoldAutoSelectionMode = MouseHoldAutoSelectionMode;
+}
+
+bool inline MouseCatcherThread::isSelectionMode() const
+{
+	return m_isSelectionMode;
+}
+
+void MouseCatcherThread::setSelectionMode(bool isSelectionMode)
+{
+	m_isSelectionMode = isSelectionMode;
 }
 
 
 
 LRESULT inline MouseCatcherThread::MouseCallBackProcProxy(int nCode, WPARAM wParam, LPARAM lParam)
 {
-    return MouseCatcherThread::m_This->MouseCallBackProc( nCode,wParam, lParam);
+	return MouseCatcherThread::m_This->MouseCallBackProc( nCode,wParam, lParam);
 }
 
 int inline MouseCatcherThread::getDelay() const
 {
-    return m_Delay;
+	return m_Delay;
 }
 
 void MouseCatcherThread::setDelay(int Delay)
 {
-    m_Delay = Delay;
+	m_Delay = Delay;
 }
 
 
 bool inline MouseCatcherThread::isStarted() const
 {
-    return m_isStarted;
+	return m_isStarted;
 }
 
 void MouseCatcherThread::setStarted(bool Value)
 {
-    m_isStarted = Value;
+	m_isStarted = Value;
 }
 
 bool inline MouseCatcherThread::isLoggingStarted() const
 {
-    return m_isLoggingStarted;
+	return m_isLoggingStarted;
 }
 
 void MouseCatcherThread::setLoggingStarted(bool isLoggingStarted)
 {
-    m_isLoggingStarted = isLoggingStarted;
+	m_isLoggingStarted = isLoggingStarted;
 }
-
 
 void MouseCatcherThread::run()
 {
-    m_Hook = SetWindowsHookEx(WH_MOUSE_LL,MouseCallBackProcProxy,NULL,0);
-    if(m_Hook==NULL)
-    {
-        QMessageBox Mb;
-        Mb.critical(0,"Critical Error!",(QString("Cannot set WH_MOUSE_LL hook! Error: ") + QString::number((double)GetLastError(),'f',1)));
-    }
-    else exec();
+	m_Hook = SetWindowsHookEx(WH_MOUSE_LL,MouseCallBackProcProxy,NULL,0);
+	if(m_Hook==NULL)
+	{
+		QMessageBox Mb;
+		Mb.critical(0,"Critical Error!",(QString("Cannot set WH_MOUSE_LL hook! Error: ") + QString::number((double)GetLastError(),'f',1)));
+	}
+	else exec();
 }

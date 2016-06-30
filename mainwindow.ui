@@ -7,7 +7,7 @@
     <x>0</x>
     <y>0</y>
     <width>344</width>
-    <height>321</height>
+    <height>351</height>
    </rect>
   </property>
   <property name="sizePolicy">
@@ -23,7 +23,7 @@
    <enum>Qt::NoFocus</enum>
   </property>
   <property name="windowTitle">
-   <string>QDoubleClickFix Beta 0.5</string>
+   <string>QDoubleClickFix Beta 0.7.0</string>
   </property>
   <property name="windowIcon">
    <iconset resource="basic_resources.qrc">
@@ -38,8 +38,15 @@
   <property name="autoFillBackground">
    <bool>false</bool>
   </property>
-  <layout class="QGridLayout" name="gridLayout">
-   <item row="1" column="0">
+  <layout class="QFormLayout" name="formLayout">
+   <item row="0" column="0">
+    <widget class="QLabel" name="BuildDateLabel">
+     <property name="text">
+      <string>Build Date: DATE_HERE</string>
+     </property>
+    </widget>
+   </item>
+   <item row="2" column="0">
     <layout class="QHBoxLayout" name="horizontalLayout_4">
      <property name="sizeConstraint">
       <enum>QLayout::SetMaximumSize</enum>
@@ -122,8 +129,19 @@
          </item>
         </layout>
        </item>
+       <item>
+        <widget class="QLabel" name="label_2">
+         <property name="text">
+          <string>Total: 0 Blocked: 0</string>
+         </property>
+        </widget>
+       </item>
       </layout>
      </item>
+    </layout>
+   </item>
+   <item row="2" column="1">
+    <layout class="QHBoxLayout" name="horizontalLayout_5">
      <item>
       <layout class="QVBoxLayout" name="verticalLayout">
        <item>
@@ -163,9 +181,18 @@
         </widget>
        </item>
        <item>
-        <widget class="QLabel" name="label_2">
+        <widget class="QPushButton" name="ClickLockSettingsButton">
+         <property name="enabled">
+          <bool>true</bool>
+         </property>
+         <property name="sizePolicy">
+          <sizepolicy hsizetype="Minimum" vsizetype="Maximum">
+           <horstretch>0</horstretch>
+           <verstretch>0</verstretch>
+          </sizepolicy>
+         </property>
          <property name="text">
-          <string>Total: 0 Blocked: 0</string>
+          <string>Click Lock settings</string>
          </property>
         </widget>
        </item>
@@ -173,7 +200,7 @@
      </item>
     </layout>
    </item>
-   <item row="2" column="0">
+   <item row="4" column="0" colspan="2">
     <widget class="QPlainTextEdit" name="plainTextEdit">
      <property name="sizePolicy">
       <sizepolicy hsizetype="Expanding" vsizetype="Expanding">
@@ -181,12 +208,17 @@
        <verstretch>0</verstretch>
       </sizepolicy>
      </property>
-    </widget>
-   </item>
-   <item row="0" column="0">
-    <widget class="QLabel" name="BuildDateLabel">
-     <property name="text">
-      <string>Build Date: DATE_HERE</string>
+     <property name="sizeAdjustPolicy">
+      <enum>QAbstractScrollArea::AdjustIgnored</enum>
+     </property>
+     <property name="tabChangesFocus">
+      <bool>true</bool>
+     </property>
+     <property name="readOnly">
+      <bool>true</bool>
+     </property>
+     <property name="textInteractionFlags">
+      <set>Qt::TextSelectableByKeyboard|Qt::TextSelectableByMouse</set>
      </property>
     </widget>
    </item>

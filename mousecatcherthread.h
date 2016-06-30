@@ -12,7 +12,7 @@
 *    GNU General Public License for more details.
 *
 *    You should have received a copy of the GNU General Public License
-*    along with Foobar.  If not, see <http://www.gnu.org/licenses/>.
+*    along with DoubleClickFix.  If not, see <http://www.gnu.org/licenses/>.
 */
 
 #ifndef MOUSECATCHERTHREAD_H
@@ -37,26 +37,38 @@ public:
     bool isLoggingStarted() const;
     void setLoggingStarted(bool isLoggingStarted);
 
+	bool isSelectionMode() const;
+	void setSelectionMode(bool isSelectionMode);
+
+	bool isMouseHoldAutoSelectionMode() const;
+	void setMouseHoldAutoSelectionMode(bool MouseHoldAutoSelectionMode);
+
+	double getMouseHoldingDelay() const;
+	void setMouseHoldingDelay(double MouseHoldingDelay);
+
 private:
-    MouseCatcherThread();
-    void run();
-    // Stuff for hooking
-    HHOOK m_Hook;
-    unsigned short iBlockMouseButtonUps[2];
+	MouseCatcherThread();
+	void run();
+	// Stuff for hooking
+	HHOOK m_Hook;
+	unsigned short iBlockMouseButtonUps[2];
     unsigned short iBlockMouseButtonDowns[2];
     static MouseCatcherThread *m_This;
     static LRESULT CALLBACK MouseCallBackProcProxy(int nCode,WPARAM wParam, LPARAM lParam);
     LRESULT MouseCallBackProc(int nCode,WPARAM wParam, LPARAM lParam);
-
-
 private:
-    QTime m_ClickTimer;
+	QTime m_ClickTimer;
     bool m_isStarted;
     bool m_isLoggingStarted;
     int m_Delay;
+	bool m_isSelectionMode;
+	bool m_isMouseHoldAutoSelectionMode;
+	int m_MouseHoldingDelay;
+
+	bool m_iToggled = false;
 signals:
     void delay(int msec, bool blocked, bool isRight);
-
+	void mouse_up();
 
 };
 

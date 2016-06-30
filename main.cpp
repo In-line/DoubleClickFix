@@ -12,7 +12,7 @@
 *    GNU General Public License for more details.
 *
 *    You should have received a copy of the GNU General Public License
-*    along with Foobar.  If not, see <http://www.gnu.org/licenses/>.
+*    along with DoubleClickFix.  If not, see <http://www.gnu.org/licenses/>.
 */
 
 #include "mainwindow.h"
@@ -22,9 +22,13 @@
 int main(int argc, char *argv[])
 {
     QCoreApplication::setApplicationName("Double Click Fixer");
-    QApplication a(argc, argv);
-    MainWindow w;
-    w.show();
+	QApplication *a = new QApplication(argc, argv);
+	MainWindow *w = new MainWindow();
+	w->show();
+	int iReturn = a->exec();
 
-    return a.exec();
+	delete w;
+	delete a;
+
+	return iReturn;
 }
