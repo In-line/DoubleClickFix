@@ -69,30 +69,6 @@ LRESULT inline MouseCatcherThread::MouseCallBackProc(int nCode, WPARAM wParam, L
 				bool isRight = wParam==WM_RBUTTONDOWN;
 				int iMSecs = m_ClickTimer.elapsed();
 				m_ClickTimer.restart();
-
-
-				if(isMouseHoldAutoSelectionMode())
-				{
-					QTimer *t = new QTimer();
-					t->setSingleShot(true);
-					t->setInterval(getMouseHoldingDelay());
-					t->moveToThread(this);
-					connect(this, SIGNAL(mouse_up()), t, SLOT(stop()));
-					connect(this, SIGNAL(mouse_up()), t, SLOT(deleteLater()));
-
-					connect(this, SIGNAL(finished()), t, SLOT(stop()));
-					connect(this, SIGNAL(finished()), t, SLOT(deleteLater()));
-
-
-					connect(t, &QTimer::timeout, [this](){
-
-						setSelectionMode(true);
-						m_iToggled=true;
-					});
-
-
-					t->start();
-				}
 				bool needLog = isLoggingStarted();
 
 				if(getDelay()>=iMSecs)
@@ -106,25 +82,50 @@ LRESULT inline MouseCatcherThread::MouseCallBackProc(int nCode, WPARAM wParam, L
 					emit delay(iMSecs, false, isRight);
 				}
 
-				if(m_iToggled && wParam==WM_LBUTTONDOWN)
+				if(!isRight)
 				{
-					m_iToggled=!m_iToggled;
+					if(m_iToggled)
+					{
+						m_iToggled=false;
 
-					POINT p;
-					GetCursorPos(&p);
-					INPUT ip;
-					memset(&ip, 0, sizeof(INPUT));
-					ip.type = INPUT_MOUSE;
-					ip.mi.dx = p.x;
-					ip.mi.dy = p.y;
-					ip.mi.dwFlags = MOUSEEVENTF_LEFTUP | MOUSEEVENTF_ABSOLUTE;
-					SendInput(1, &ip, sizeof(INPUT));
-					setSelectionMode(false);
-					return BLOCK_CALL;
-				}
-				else if(isSelectionMode())
-				{
-					m_iToggled=!m_iToggled;
+						POINT p;
+						GetCursorPos(&p);
+						INPUT ip;
+						memset(&ip, 0, sizeof(INPUT));
+						ip.type = INPUT_MOUSE;
+						ip.mi.dx = p.x;
+						ip.mi.dy = p.y;
+						ip.mi.dwFlags = MOUSEEVENTF_LEFTUP | MOUSEEVENTF_ABSOLUTE;
+						SendInput(1, &ip, sizeof(INPUT));
+						setSelectionMode(false);
+						return BLOCK_CALL;
+					}
+					else if(isSelectionMode())
+					{
+						m_iToggled=true;
+					}
+					else if(isMouseHoldAutoSelectionMode())
+					{
+
+						QTimer *t = new QTimer();
+						t->setSingleShot(true);
+						t->setInterval(getMouseHoldingDelay());
+						t->moveToThread(this);
+						connect(this, SIGNAL(mouse_up()), t, SLOT(stop()));
+						connect(this, SIGNAL(mouse_up()), t, SLOT(deleteLater()));
+
+						connect(this, SIGNAL(finished()), t, SLOT(stop()));
+						connect(this, SIGNAL(finished()), t, SLOT(deleteLater()));
+
+
+						connect(t, &QTimer::timeout, [this](){
+							setSelectionMode(true);
+							m_iToggled=true;
+						});
+
+
+						t->start();
+					}
 				}
 			}
 			break;
@@ -133,16 +134,20 @@ LRESULT inline MouseCatcherThread::MouseCallBackProc(int nCode, WPARAM wParam, L
 		{
 			if(isStarted())
 			{
-				if(m_iToggled && wParam==WM_LBUTTONUP)
+				short index = short(wParam==WM_RBUTTONUP);
+				if((m_iToggled || isSelectionMode()) &&  index==0)
 				{
+					if(iBlockMouseButtonUps[index]>0)
+					{
+						--iBlockMouseButtonUps[index];
+					}
 					return BLOCK_CALL;
 				}
 				else
 				{
-					int index = (int)wParam==WM_RBUTTONUP;
 					if(iBlockMouseButtonUps[index]>0)
 					{
-						iBlockMouseButtonUps[index]--;
+						--iBlockMouseButtonUps[index];
 						return BLOCK_CALL;
 					}
 					else if(isMouseHoldAutoSelectionMode())
