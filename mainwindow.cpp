@@ -52,7 +52,7 @@ MainWindow::MainWindow(QWidget *parent) :
 		}
 	});
 
-	m_Settings = new QSettings(SETTINGS_ENTRY_NAME,QSettings::IniFormat);
+	m_Settings = new QSettings(QDir::toNativeSeparators(QCoreApplication::applicationDirPath())+QDir::separator()+SETTINGS_ENTRY_NAME,QSettings::IniFormat);
 	m_Settings->beginGroup("MAIN");
 	QApplication::processEvents();
 

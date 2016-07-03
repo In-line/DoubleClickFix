@@ -20,10 +20,10 @@ IDI_ICON1 ICON "icon.ico"
 
 #include <windows.h>
 
-#define VER_FILEVERSION             0,7,0
-#define VER_FILEVERSION_STR         "0.7.0.0\0"
-#define VER_PRODUCTVERSION          0,7,0
-#define VER_PRODUCTVERSION_STR      "0.6.7\0"
+#define VER_FILEVERSION             0,7,1
+#define VER_FILEVERSION_STR         "0.7.1.0\0"
+#define VER_PRODUCTVERSION          0,7,1
+#define VER_PRODUCTVERSION_STR      "0.7.1\0"
 #define VER_FILEDESCRIPTION_STR     "Double Click Problem Fixer Tool"
 #define VER_INTERNALNAME_STR        "DoubleClickFix"
 #define VER_LEGALCOPYRIGHT_STR      "Copyright (C) 2016 Alik Aslanyan"

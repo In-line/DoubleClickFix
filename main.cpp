@@ -24,7 +24,24 @@ int main(int argc, char *argv[])
     QCoreApplication::setApplicationName("Double Click Fixer");
 	QApplication *a = new QApplication(argc, argv);
 	MainWindow *w = new MainWindow();
-	w->show();
+
+	bool iShowMinimized = false;
+	if(argc > 1)
+	{
+		for(int i = 1; i<argc;++i)
+		{
+			if(strcmp(argv[i], "-m")==0)
+			{
+				iShowMinimized = true;
+				break;
+			}
+		}
+	}
+	if(iShowMinimized)
+		w->showMinimized();
+	else
+		w->show();
+
 	int iReturn = a->exec();
 
 	delete w;

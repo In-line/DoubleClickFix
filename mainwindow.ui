@@ -23,7 +23,7 @@
    <enum>Qt::NoFocus</enum>
   </property>
   <property name="windowTitle">
-   <string>QDoubleClickFix Beta 0.7.0</string>
+   <string>QDoubleClickFix Beta 0.7.1</string>
   </property>
   <property name="windowIcon">
    <iconset resource="basic_resources.qrc">

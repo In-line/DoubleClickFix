@@ -71,6 +71,28 @@ LRESULT inline MouseCatcherThread::MouseCallBackProc(int nCode, WPARAM wParam, L
 				m_ClickTimer.restart();
 
 
+				if(isMouseHoldAutoSelectionMode())
+				{
+					QTimer *t = new QTimer();
+					t->setSingleShot(true);
+					t->setInterval(getMouseHoldingDelay());
+					t->moveToThread(this);
+					connect(this, SIGNAL(mouse_up()), t, SLOT(stop()));
+					connect(this, SIGNAL(mouse_up()), t, SLOT(deleteLater()));
+
+					connect(this, SIGNAL(finished()), t, SLOT(stop()));
+					connect(this, SIGNAL(finished()), t, SLOT(deleteLater()));
+
+
+					connect(t, &QTimer::timeout, [this](){
+
+						setSelectionMode(true);
+						m_iToggled=true;
+					});
+
+
+					t->start();
+				}
 				bool needLog = isLoggingStarted();
 
 				if(getDelay()>=iMSecs)
@@ -103,28 +125,6 @@ LRESULT inline MouseCatcherThread::MouseCallBackProc(int nCode, WPARAM wParam, L
 				else if(isSelectionMode())
 				{
 					m_iToggled=!m_iToggled;
-				}
-				else if(isMouseHoldAutoSelectionMode())
-				{
-					QTimer *t = new QTimer();
-					t->setSingleShot(true);
-					t->setInterval(getMouseHoldingDelay());
-					t->moveToThread(this);
-					connect(this, SIGNAL(mouse_up()), t, SLOT(stop()));
-					connect(this, SIGNAL(mouse_up()), t, SLOT(deleteLater()));
-
-					connect(this, SIGNAL(finished()), t, SLOT(stop()));
-					connect(this, SIGNAL(finished()), t, SLOT(deleteLater()));
-
-
-					connect(t, &QTimer::timeout, [this](){
-
-						setSelectionMode(true);
-						m_iToggled=true;
-					});
-
-
-					t->start();
 				}
 			}
 			break;
