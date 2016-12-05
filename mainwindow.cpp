@@ -1,18 +1,18 @@
-/*   Copyright (C) 2016 Alik Aslanyan <cplusplus256@gmail.com>
-*    This file is part of DoubleClickFix.
+/*  	 Copyright (C) 2016 Alik Aslanyan <cplusplus256@gmail.com>
+*  	  	This file is part of DoubleClickFix.
 *
-*    DoubleClickFix is free software: you can redistribute it and/or modify
-*    it under the terms of the GNU General Public License as published by
-*    the Free Software Foundation, either version 3 of the License, or
-*    (at your option) any later version.
+*  	  	DoubleClickFix is free software: you can redistribute it and/or modify
+*  	  	it under the terms of the GNU General Public License as published by
+*  	  	the Free Software Foundation, either version 3 of the License, or
+*  	  	(at your option) any later version.
 *
-*    DoubleClickFix is distributed in the hope that it will be useful,
-*    but WITHOUT ANY WARRANTY; without even the implied warranty of
-*    MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
-*    GNU General Public License for more details.
+*  	  	DoubleClickFix is distributed in the hope that it will be useful,
+*  	  	but WITHOUT ANY WARRANTY; without even the implied warranty of
+*  	  	MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  	See the
+*  	  	GNU General Public License for more details.
 *
-*    You should have received a copy of the GNU General Public License
-*    along with DoubleClickFix.  If not, see <http://www.gnu.org/licenses/>.
+*  	  	You should have received a copy of the GNU General Public License
+*  	  	along with DoubleClickFix.  	If not, see <http://www.gnu.org/licenses/>.
 */
 
 #include "mainwindow.h"
@@ -98,7 +98,7 @@ MainWindow::MainWindow(QWidget *parent) :
 
 	trayIcon = new QSystemTrayIcon(theIcon,this);
 	connect(trayIcon, SIGNAL(activated(QSystemTrayIcon::ActivationReason)),
-			this, SLOT(slotIconActivated(QSystemTrayIcon::ActivationReason)));
+			  this, SLOT(slotIconActivated(QSystemTrayIcon::ActivationReason)));
 
 
 	QMenu *menu = new QMenu();
@@ -109,7 +109,7 @@ MainWindow::MainWindow(QWidget *parent) :
 	});
 	menu->addAction(action);
 
-	QAction *action2 =  new QAction(QIcon(":/quit.ico"),"Quit", this);
+	QAction *action2 =  	new QAction(QIcon(":/quit.ico"),"Quit", this);
 	connect(action2,SIGNAL(triggered(bool)),qApp,SLOT(quit()));
 
 	menu->addAction(action2);
@@ -453,8 +453,8 @@ void MainWindow::on_ClickLockSettingsButton_clicked()
 			new click_lock_settings(this, m_ClickLockSettings);
 
 	connect(ClickLockSettingsWindow, &click_lock_settings::settingsSaved,[this](click_lock_settings_data &data){
-			m_ClickLockSettings = data;
-			UpdateClickLockSettings();
+		m_ClickLockSettings = data;
+		UpdateClickLockSettings();
 	});
 
 	ClickLockSettingsWindow->showModal();
