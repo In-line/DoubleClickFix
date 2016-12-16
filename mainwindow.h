@@ -28,7 +28,7 @@
 #pragma GCC diagnostic pop
 
 #include <windows.h>
-#include "mousecatcherthread.h"
+#include "mouse_catcher_thread.h"
 
 
 namespace Ui {

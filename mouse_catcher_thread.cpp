@@ -15,7 +15,7 @@
 *  	  	along with DoubleClickFix.  	If not, see <http://www.gnu.org/licenses/>.
 */
 
-#include "mousecatcherthread.h"
+#include "mouse_catcher_thread.h"
 
 #pragma GCC diagnostic push
 #pragma GCC diagnostic ignored "-Weffc++" // TODO: Refactor

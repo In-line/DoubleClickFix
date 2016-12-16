@@ -16,14 +16,15 @@ QMAKE_CXXFLAGS += -Wall -Wextra  -Wzero-as-null-pointer-constant -Weffc++ -Wunkn
 
 SOURCES += main.cpp\
   	  	  	  	mainwindow.cpp \
-  	  	mousecatcherthread.cpp \
   	  	click_lock_settings.cpp \
-  	  	hotkey.cpp
+  	  	hotkey.cpp \
+    mouse_catcher_thread.cpp
 
 HEADERS  	+= mainwindow.h  	\
-  	  	mousecatcherthread.h \
   	  	click_lock_settings.h \
-  	  	hotkey.h
+  	  	hotkey.h \
+    widget_input_event_catcher.h \
+    mouse_catcher_thread.h
 
 FORMS  	  	+= mainwindow.ui \
   	  	click_lock_settings.ui
