@@ -303,7 +303,7 @@ bool inline MainWindow::isMinimizing() const
 	return m_isMinimizing;
 }
 
-void inline MainWindow::setMinimizing(bool value)
+void MainWindow::setMinimizing(bool value)
 {
 	m_isMinimizing = value;
 }

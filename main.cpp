@@ -38,7 +38,10 @@ int main(int argc, char *argv[])
 		}
 	}
 	if(iShowMinimized)
+	{
+		w->setMinimizing(true);
 		w->showMinimized();
+	}
 	else
 		w->show();
 

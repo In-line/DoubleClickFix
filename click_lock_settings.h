@@ -28,8 +28,8 @@
 
 namespace Ui {
 class click_lock_settings;
-struct click_lock_settings_data;
 }
+struct click_lock_settings_data;
 
 #pragma GCC diagnostic push
 #pragma GCC diagnostic ignored "-Weffc++" // TODO: Refactor
