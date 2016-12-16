@@ -326,6 +326,20 @@ void MainWindow::UpdateClickLockSettings()
 	this->m_Catcher->setMouseHoldingDelay(m_ClickLockSettings.dMouseHoldingDelay * 1000.0);
 }
 
+void MainWindow::on_ClickLockSettingsButton_clicked()
+{
+	click_lock_settings* ClickLockSettingsWindow =
+			new click_lock_settings(this, m_ClickLockSettings);
+
+	connect(ClickLockSettingsWindow, &click_lock_settings::settingsSaved,[this](click_lock_settings_data &data){
+		m_ClickLockSettings = data;
+		UpdateClickLockSettings();
+	});
+
+	ClickLockSettingsWindow->showModal();
+	ClickLockSettingsWindow->deleteLater();
+}
+
 inline LRESULT WindowsHotKeyFilter::True_LowLevelKeyboardProc(int nCode, WPARAM wParam, LPARAM lParam)
 {
 	if(nCode ==HC_ACTION && !isDisabled())
@@ -439,16 +453,4 @@ LRESULT CALLBACK WindowsHotKeyFilter::WindowsHotKey_LowLevelKeyboardProc(int nCo
 	return m_This->True_LowLevelKeyboardProc(nCode, wParam, lParam);
 }
 
-void MainWindow::on_ClickLockSettingsButton_clicked()
-{
-	click_lock_settings* ClickLockSettingsWindow =
-			new click_lock_settings(this, m_ClickLockSettings);
 
-	connect(ClickLockSettingsWindow, &click_lock_settings::settingsSaved,[this](click_lock_settings_data &data){
-		m_ClickLockSettings = data;
-		UpdateClickLockSettings();
-	});
-
-	ClickLockSettingsWindow->showModal();
-	ClickLockSettingsWindow->deleteLater();
-}
