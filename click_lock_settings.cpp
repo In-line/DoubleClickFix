@@ -16,13 +16,23 @@
 */
 
 #include "click_lock_settings.h"
-#include "ui_click_lock_settings.h"
+
+
+#pragma GCC diagnostic push
+#pragma GCC diagnostic ignored "-Weffc++" // TODO: Refactor
 #include <QEventLoop>
 #include <QMessageBox>
 #include <QTimer>
+#include "ui_click_lock_settings.h"
+#pragma GCC diagnostic pop
+
 click_lock_settings::click_lock_settings(QWidget *parent, click_lock_settings_data &data) :
-	QWidget(parent, Qt::Window | Qt:: Dialog), m_bChanged(false), m_KeyEditingState(0),
-	ui(new Ui::click_lock_settings)
+	QWidget(parent, Qt::Window | Qt:: Dialog),
+	ui(new Ui::click_lock_settings),
+	m_Data(),
+	m_UpdatedData(),
+	m_bChanged(false),
+	m_KeyEditingState(0)
 {
 	ui->setupUi(this);
 
@@ -149,43 +159,42 @@ void click_lock_settings::closeEvent(QCloseEvent *event)
 	emit closed();
 	event->accept();
 }
-#include <QDebug>
-#include <tchar.h>
-typedef std::basic_string<TCHAR> tstring;
 
-tstring VirtualKeyCodeToStdString(UCHAR virtualKey)
-{
-	UINT scanCode = MapVirtualKey(virtualKey, MAPVK_VK_TO_VSC);
-
-	TCHAR szName[128];
-	int result = 0;
-	switch (virtualKey)
-	{
-		case VK_PAUSE:
-			wsprintf(szName, L"Pause Break");
-			result = 1;
-			break;
-		case VK_LEFT: case VK_UP: case VK_RIGHT: case VK_DOWN: // arrow keys
-		case VK_PRIOR: case VK_NEXT: // page up and page down
-		case VK_END: case VK_HOME:
-		case VK_INSERT: case VK_DELETE:
-		case VK_DIVIDE: // numpad slash
-		case VK_NUMLOCK:
-			scanCode |= 0x100;
-		default:
-			result = GetKeyNameText(scanCode << 16, szName, 128);
-	}
-	if(result == 0)
-		return tstring(L"[ERROR]");
-	/*throw std::system_error(std::error_code(GetLastError(), std::system_category()),
-								"WinAPI Error occured.");*/
-	return szName;
-}
 
 
 
 QString click_lock_settings::KeyCodesToQString(const QSet<UINT> &qCodes)
 {
+
+	auto VirtualKeyCodeToStdString = [] (UCHAR virtualKey) -> std::basic_string<TCHAR>
+	{
+		UINT scanCode = MapVirtualKey(virtualKey, MAPVK_VK_TO_VSC);
+
+		TCHAR szName[128];
+		int result = 0;
+		switch (virtualKey)
+		{
+			case VK_PAUSE:
+				wsprintf(szName, L"Pause Break");
+				result = 1;
+				break;
+			case VK_LEFT: case VK_UP: case VK_RIGHT: case VK_DOWN: // arrow keys
+			case VK_PRIOR: case VK_NEXT: // page up and page down
+			case VK_END: case VK_HOME:
+			case VK_INSERT: case VK_DELETE:
+			case VK_DIVIDE: // numpad slash
+			case VK_NUMLOCK:
+				scanCode |= 0x100;
+			default:
+				result = GetKeyNameText(scanCode << 16, szName, 128);
+		}
+		if(result == 0)
+			return (L"[ERROR]");
+		/*throw std::system_error(std::error_code(GetLastError(), std::system_category()),
+									"WinAPI Error occured.");*/
+		return szName;
+	};
+
 	QString szReturn;
 	for(UINT virtualKey : qCodes)
 	{

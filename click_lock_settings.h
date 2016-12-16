@@ -19,17 +19,25 @@
 #ifndef CLICK_LOCK_SETTINGS_H
 #define CLICK_LOCK_SETTINGS_H
 
+
+#pragma GCC diagnostic push
+#pragma GCC diagnostic ignored "-Weffc++" // TODO: Refactor
 #include <QWidget>
 #include <QCloseEvent>
+#pragma GCC diagnostic pop
 
 namespace Ui {
-	class click_lock_settings;
-	struct click_lock_settings_data;
+class click_lock_settings;
+struct click_lock_settings_data;
 }
 
-#include "hotkey.h"
-#include <QDebug>
+#pragma GCC diagnostic push
+#pragma GCC diagnostic ignored "-Weffc++" // TODO: Refactor
 #include <QLineEdit>
+#pragma GCC diagnostic pop
+
+
+#include "hotkey.h"
 struct click_lock_settings_data
 {
 	double dMouseHoldingDelay;
@@ -37,15 +45,13 @@ struct click_lock_settings_data
 	bool bHotKeyEnabled;
 	bool bMouseHoldingEnabled;
 
-	click_lock_settings_data() : hkKey(), dMouseHoldingDelay(0.010),
+	click_lock_settings_data() : dMouseHoldingDelay(0.010), hkKey(),
 		bHotKeyEnabled(false), bMouseHoldingEnabled(false) {}
 	bool operator!=(click_lock_settings_data &o)
 	{
-		// TOOD: Refactor this
-		return o.bHotKeyEnabled != this->bHotKeyEnabled ||
-											o.bMouseHoldingEnabled != this->bMouseHoldingEnabled ||
-																			  o.dMouseHoldingDelay != this->dMouseHoldingDelay ||
-																											  o.hkKey != this->hkKey;
+		auto a = std::tie(dMouseHoldingDelay, hkKey, bHotKeyEnabled, bMouseHoldingEnabled);
+		auto b = std::tie(o.dMouseHoldingDelay, o.hkKey, o.bHotKeyEnabled, o.bMouseHoldingEnabled);
+		return a != b;
 
 	}
 };
@@ -73,9 +79,9 @@ public:
 	virtual ~QWidgetInputEventCatcher() { }
 
 protected:
-	virtual void resizeEvent(QResizeEvent *event)
+	virtual void resizeEvent(QResizeEvent*)
 	{
-		QWidget *parentPointer = static_cast<QWidget*>(this->parent());
+		QWidget *parentPointer = dynamic_cast<QWidget*>(this->parent());
 		if(parentPointer!=nullptr)
 			this->setFixedSize(parentPointer->size());
 	}
@@ -109,21 +115,26 @@ signals:
 	void virtualKeyRelease(UINT virtualKey);
 };
 
+
+#include <tchar.h>
+
 class click_lock_settings : public QWidget
 {
 	Q_OBJECT
 
 public:
 	explicit click_lock_settings(QWidget *parent, click_lock_settings_data &data);
+	click_lock_settings(const click_lock_settings&) = delete;
+	click_lock_settings* operator =(const click_lock_settings&) = delete;
 	~click_lock_settings();
 	void showModal();
 
 private:
 	void closeEvent (QCloseEvent *event);
+	QString KeyCodesToQString(const QSet<UINT> &qCodes);
 	Ui::click_lock_settings *ui;
 	click_lock_settings_data m_Data;
 	click_lock_settings_data m_UpdatedData;
-	QString KeyCodesToQString(const QSet<UINT> &qCodes);
 	bool m_bChanged;
 	bool m_KeyEditingState;
 	void CheckState();

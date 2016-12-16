@@ -11,8 +11,8 @@ greaterThan(QT_MAJOR_VERSION, 4): QT += widgets
 
 TARGET = DoubleClickFix
 TEMPLATE = app
-QMAKE_CXXFLAGS_RELEASE += -Ox
-
+QMAKE_CXXFLAGS_RELEASE += -O2 -Werror
+QMAKE_CXXFLAGS += -Wall -Wextra  -Wzero-as-null-pointer-constant -Weffc++ -Wunknown-pragmas
 
 SOURCES += main.cpp\
   	  	  	  	mainwindow.cpp \

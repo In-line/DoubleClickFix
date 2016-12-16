@@ -15,7 +15,10 @@
 *  	  	along with DoubleClickFix.  	If not, see <http://www.gnu.org/licenses/>.
 */
 
-#include "mainwindow.h"
+#pragma GCC diagnostic push
+#pragma GCC diagnostic ignored "-Weffc++" // TODO: Refactor
+#pragma GCC diagnostic ignored "-Wzero-as-null-pointer-constant" // TODO: Refactor
+
 #include "ui_mainwindow.h"
 #include <QDebug>
 #include <QMessageBox>
@@ -26,9 +29,22 @@
 #include <QGraphicsOpacityEffect>
 #include <ctime>
 #include <QAbstractEventDispatcher>
+#pragma GCC diagnostic pop
+
+#include "mainwindow.h"
+
 MainWindow::MainWindow(QWidget *parent) :
 	QWidget(parent),
-	ui(new Ui::MainWindow)
+	m_Catcher(nullptr),
+	ui(new Ui::MainWindow),
+	m_Settings(nullptr),
+	m_TotalClicks(0),
+	m_BlockedClicks(0),
+	trayIcon(nullptr),
+	m_ClickLockSettings(),
+	m_iHotKeyToggled(false),
+	m_HkFilter(nullptr),
+	m_isMinimizing(false)
 {
 
 	m_Catcher = MouseCatcherThread::getInstance();
@@ -120,7 +136,7 @@ MainWindow::MainWindow(QWidget *parent) :
 
 	//Some magic for __TIMESTAMP__
 	ui->BuildDateLabel->setText((QString)"Build on: " + __TIMESTAMP__);
-	srand(time(NULL));
+	srand(time(nullptr));
 	int TIME_IN_MSECS = rand()%10000+10000;
 
 	QTimer::singleShot(TIME_IN_MSECS-1000, this, [this](){
@@ -276,6 +292,10 @@ void MainWindow::slotIconActivated(QSystemTrayIcon::ActivationReason reason)
 			trayIcon->showMessage("DoubleClickFix", "Enjoy the interface!", icon, 10000);
 			break;
 		}
+		default:
+		{
+			break;
+		}
 	}
 }
 bool inline MainWindow::isMinimizing() const
@@ -293,7 +313,7 @@ hotKey inline MainWindow::getHotKey() const
 	return m_ClickLockSettings.hkKey;
 }
 
-void inline MainWindow::setHotKey(hotKey &value)
+void inline MainWindow::setHotKey(const hotKey &value)
 {
 	m_ClickLockSettings.hkKey = value;
 }
@@ -305,38 +325,6 @@ void MainWindow::UpdateClickLockSettings()
 	this->m_Catcher->setMouseHoldAutoSelectionMode(m_ClickLockSettings.bMouseHoldingEnabled);
 	this->m_Catcher->setMouseHoldingDelay(m_ClickLockSettings.dMouseHoldingDelay * 1000.0);
 }
-/*
-
-bool WindowsHotKeyFilter::hotKeyFilter(const QByteArray &eventType, void *message, long *)
-{
-	MSG *msg = static_cast< MSG * >( message );
-	switch(msg->message)
-	{
-		case WM_HOTKEY:
-		{
-			hotKey hk = m_Overlord->getHotKey();
-			INPUT input;
-			input.type = INPUT_KEYBOARD;
-			memset(&input.ki, 0, sizeof(KEYBDINPUT));
-			input.ki.wVk = hk.first;
-
-			UnregisterHotKey(NULL, HOTKEY_ID);
-
-			// input.ki.dwFlags = 0; // No flags = keyDown
-
-			SendInput(1, &input, sizeof(INPUT));
-			input.ki.dwFlags = KEYEVENTF_KEYUP;
-			SendInput(1, &input, sizeof(INPUT));
-			RegisterHotKey(NULL, 1, 0, hk.first);
-
-			qDebug () << "Press CAPS";
-			break;
-		}
-	}
-
-	return false;
-}
-*/
 
 inline LRESULT WindowsHotKeyFilter::True_LowLevelKeyboardProc(int nCode, WPARAM wParam, LPARAM lParam)
 {
@@ -346,7 +334,7 @@ inline LRESULT WindowsHotKeyFilter::True_LowLevelKeyboardProc(int nCode, WPARAM 
 		hotKey hkKey = m_Overlord->getHotKey();
 		int iSize = hkKey.size();
 
-		const enum EVENT_TYPE
+		enum EVENT_TYPE
 		{
 			KEY_DOWN,
 			KEY_UP,
@@ -395,6 +383,8 @@ inline LRESULT WindowsHotKeyFilter::True_LowLevelKeyboardProc(int nCode, WPARAM 
 						downKeys.remove(iCode);
 						break;
 					}
+					default:
+						break;
 				}
 			}
 			/* iSize == 1 */
@@ -412,6 +402,8 @@ inline LRESULT WindowsHotKeyFilter::True_LowLevelKeyboardProc(int nCode, WPARAM 
 						emit HotKey_Up();
 						break;
 					}
+					default:
+						break;
 				}
 			}
 
@@ -437,7 +429,7 @@ WindowsHotKeyFilter *WindowsHotKeyFilter::getInstance(MainWindow *Overlord)
 		m_This = new WindowsHotKeyFilter(Overlord);
 
 	if(!m_Hook)
-		m_Hook = SetWindowsHookEx(WH_KEYBOARD_LL,WindowsHotKey_LowLevelKeyboardProc, 0, 0);
+		m_Hook = SetWindowsHookEx(WH_KEYBOARD_LL,WindowsHotKey_LowLevelKeyboardProc, nullptr, 0);
 
 	return m_This;
 }

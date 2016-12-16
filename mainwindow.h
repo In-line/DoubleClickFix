@@ -18,15 +18,22 @@
 #ifndef MAINWINDOW_H
 #define MAINWINDOW_H
 
+#pragma GCC diagnostic push
+#pragma GCC diagnostic ignored "-Weffc++" // TODO: Refactor
 #include <QWidget>
+#include <QCloseEvent>
+#include <QWidget>
+#include <qsystemtrayicon.h>
+#include <QSettings>
+#pragma GCC diagnostic pop
+
 #include <windows.h>
 #include "mousecatcherthread.h"
-#include <qsystemtrayicon.h>
+
 
 namespace Ui {
 	class MainWindow;
 }
-#include <QSettings>
 
 #define SETTINGS_ENTRY_NAME "DoubleClickFix.ini"
 
@@ -74,10 +81,12 @@ private:
 	static HHOOK m_Hook;
 	MainWindow *m_Overlord;
 	LRESULT True_LowLevelKeyboardProc(int nCode, WPARAM wParam, LPARAM lParam);
-	WindowsHotKeyFilter(MainWindow *Overlord)
+	explicit WindowsHotKeyFilter(MainWindow *Overlord) : m_Overlord(nullptr)
 	{
 		m_Overlord = Overlord;
 	}
+	WindowsHotKeyFilter(const WindowsHotKeyFilter&) = delete;
+	WindowsHotKeyFilter &operator =(WindowsHotKeyFilter&) = delete;
 	bool m_iDisabled = false;
 public:
 	virtual ~WindowsHotKeyFilter()
@@ -102,17 +111,16 @@ class MainWindow : public QWidget
 	Q_OBJECT
 
 public:
-	explicit MainWindow(QWidget *parent = 0);
+	explicit MainWindow(QWidget *parent = nullptr);
+	MainWindow(MainWindow&) = delete;
+	MainWindow &operator =(MainWindow&) = delete;
 	~MainWindow();
 	bool isMinimizing() const;
 	void setMinimizing(bool value);
 	hotKey getHotKey() const;
 private:
-	void inline setHotKey(hotKey &value);
-	click_lock_settings_data m_ClickLockSettings;
-	bool m_iHotKeyToggled = false;
-	WindowsHotKeyFilter *m_HkFilter;
 	void UpdateClickLockSettings();
+	void inline setHotKey(const hotKey &value);
 protected:
 	void changeEvent(QEvent *e);
 private slots:
@@ -131,12 +139,17 @@ private slots:
 	void on_ClickLockSettingsButton_clicked();
 
 private:
-	MouseCatcherThread *m_Catcher;
+	MouseCatcherThread *m_Catcher = nullptr;
 	Ui::MainWindow *ui;
-	QSettings *m_Settings = 0;
+	QSettings *m_Settings = nullptr;
 	quint64 m_TotalClicks = 0;
 	quint64 m_BlockedClicks = 0;
 	QSystemTrayIcon *trayIcon;
+
+
+	click_lock_settings_data m_ClickLockSettings;
+	bool m_iHotKeyToggled = false;
+	WindowsHotKeyFilter *m_HkFilter;
 
 	bool m_isMinimizing = false;
 

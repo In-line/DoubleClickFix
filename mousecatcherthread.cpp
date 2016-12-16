@@ -16,17 +16,30 @@
 */
 
 #include "mousecatcherthread.h"
+
+#pragma GCC diagnostic push
+#pragma GCC diagnostic ignored "-Weffc++" // TODO: Refactor
 #include <QMessageBox>
 #include <QTimer>
 #if defined QT_DEBUG
 #include <QDebug>
 #endif
+#pragma GCC diagnostic pop
+
 MouseCatcherThread *MouseCatcherThread::m_This;
 #define BLOCK_CALL 1
 
-MouseCatcherThread::MouseCatcherThread() : QThread(), m_isStarted(false),
-	m_Delay(0),m_isLoggingStarted(false),m_Hook(NULL),
-	m_isMouseHoldAutoSelectionMode(false), m_MouseHoldingDelay(0), m_isSelectionMode(false)
+MouseCatcherThread::MouseCatcherThread() :
+	QThread(),
+	m_Hook(),
+	m_ClickTimer(),
+	m_isStarted(false),
+	m_isLoggingStarted(false),
+	m_Delay(1),
+	m_isSelectionMode(false),
+	m_isMouseHoldAutoSelectionMode(false),
+	m_MouseHoldingDelay(1),
+	m_iToggled(false)
 {
 	MouseCatcherThread::m_This = this;
 	m_ClickTimer.start();
@@ -45,8 +58,8 @@ MouseCatcherThread *MouseCatcherThread::getInstance()
 MouseCatcherThread::~MouseCatcherThread()
 {
 	UnhookWindowsHookEx(m_Hook);
-	m_This = NULL;
-	m_Hook = NULL;
+	m_This = nullptr;
+	m_Hook = nullptr;
 }
 #if defined QT_DEBUG
 #include <QTimer>
@@ -232,11 +245,11 @@ void MouseCatcherThread::setLoggingStarted(bool isLoggingStarted)
 
 void MouseCatcherThread::run()
 {
-	m_Hook = SetWindowsHookEx(WH_MOUSE_LL,MouseCallBackProcProxy,NULL,0);
+	m_Hook = SetWindowsHookEx(WH_MOUSE_LL,MouseCallBackProcProxy,nullptr,0);
 	if(m_Hook==NULL)
 	{
 		QMessageBox Mb;
-		Mb.critical(0,"Critical Error!",(QString("Cannot set WH_MOUSE_LL hook! Error: ") + QString::number((double)GetLastError(),'f',1)));
+		Mb.critical(nullptr,"Critical Error!",(QString("Cannot set WH_MOUSE_LL hook! Error: ") + QString::number((double)GetLastError(),'f',1)));
 	}
 	else exec();
 }

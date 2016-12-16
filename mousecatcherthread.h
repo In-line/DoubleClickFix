@@ -17,15 +17,23 @@
 
 #ifndef MOUSECATCHERTHREAD_H
 #define MOUSECATCHERTHREAD_H
-#include <QThread>
+
+
+#pragma GCC diagnostic push
+#pragma GCC diagnostic ignored "-Weffc++" // TODO: Refactor
 #include <QTime>
+#include <QThread>
+#pragma GCC diagnostic pop
+
 #include <windows.h>
-#pragma comment(lib, "user32.lib")
+
+//#pragma comment(lib, "user32.lib")
 
 class MouseCatcherThread : public QThread
 {
 	Q_OBJECT
 public:
+	MouseCatcherThread(const MouseCatcherThread&) = delete;
 	static MouseCatcherThread* getInstance();
 	virtual ~MouseCatcherThread();
 	bool isStarted() const;
@@ -46,6 +54,7 @@ public:
 	double getMouseHoldingDelay() const;
 	void setMouseHoldingDelay(double MouseHoldingDelay);
 
+	MouseCatcherThread operator =(const MouseCatcherThread&) = delete;
 private:
 	MouseCatcherThread();
 	void run();
@@ -56,7 +65,7 @@ private:
 	static MouseCatcherThread *m_This;
 	static LRESULT CALLBACK MouseCallBackProcProxy(int nCode,WPARAM wParam, LPARAM lParam);
 	LRESULT MouseCallBackProc(int nCode,WPARAM wParam, LPARAM lParam);
-private:
+
 	QTime m_ClickTimer;
 	bool m_isStarted;
 	bool m_isLoggingStarted;
@@ -64,7 +73,6 @@ private:
 	bool m_isSelectionMode;
 	bool m_isMouseHoldAutoSelectionMode;
 	int m_MouseHoldingDelay;
-
 	bool m_iToggled = false;
 signals:
 	void delay(int msec, bool blocked, bool isRight);

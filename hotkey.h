@@ -18,7 +18,12 @@
 
 #ifndef HOTKEY_H
 #define HOTKEY_H
+
+#pragma GCC diagnostic push
+#pragma GCC diagnostic ignored "-Weffc++" // TODO: Refactor
 #include <QSet>
+#pragma GCC diagnostic pop
+
 #include <windows.h>
 class hotKey : public QSet<UINT>
 {
@@ -27,8 +32,8 @@ public:
 	hotKey() : QSet<UINT>() {}
 	template<typename INITIALIZER_TYPE>
 
-	inline hotKey(std::initializer_list<INITIALIZER_TYPE> l) {
-		for(INITIALIZER_TYPE value : l)
+	inline hotKey(const std::initializer_list<INITIALIZER_TYPE> &l) {
+		for(const INITIALIZER_TYPE &value : l)
 		{
 			this->insert(UINT(value));
 		}
@@ -47,7 +52,7 @@ public:
 		}
 		return szReturn.left(szReturn.size()-1);
 	}
-	inline void fromQString(QString &str)
+	inline void fromQString(const QString &str)
 	{
 		this->clear();
 		auto list = str.split(" ");
