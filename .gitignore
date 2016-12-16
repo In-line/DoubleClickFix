@@ -1,3 +1,5 @@
+*.pro.user*
 *.pro.user
 .*
 ~*
+Desktop_Qt_*
