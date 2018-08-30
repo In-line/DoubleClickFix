@@ -23,7 +23,7 @@
    <enum>Qt::NoFocus</enum>
   </property>
   <property name="windowTitle">
-   <string>QDoubleClickFix Beta 0.7.3</string>
+   <string>QDoubleClickFix Beta 0.7.4</string>
   </property>
   <property name="windowIcon">
    <iconset resource="basic_resources.qrc">
@@ -160,6 +160,9 @@
        </item>
        <item>
         <widget class="QCheckBox" name="StartMinimized">
+         <property name="enabled">
+          <bool>false</bool>
+         </property>
          <property name="sizePolicy">
           <sizepolicy hsizetype="Expanding" vsizetype="Fixed">
            <horstretch>0</horstretch>
